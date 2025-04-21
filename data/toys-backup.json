@@ -1,0 +1,42 @@
+[
+    {
+        "_id": "t101",
+        "name": "Zoom Racer",
+        "price": 89,
+        "createdAt": 1681912978440,
+        "inStock": true,
+        "labels": ["On wheels", "Outdoor", "Battery Powered"]
+    },
+    {
+        "_id": "t102",
+        "name": "Mind Maze",
+        "price": 42,
+        "createdAt": 1681912978440,
+        "inStock": false,
+        "labels": ["Puzzle", "Box game"]
+    },
+    {
+        "_id": "t103",
+        "name": "Sparkle Doll",
+        "price": 75,
+        "createdAt": 1681912978440,
+        "inStock": true,
+        "labels": ["Doll", "Baby"]
+    },
+    {
+        "_id": "t104",
+        "name": "Creative Studio",
+        "price": 59,
+        "createdAt": 1681912978440,
+        "inStock": true,
+        "labels": ["Art", "Box game"]
+    },
+    {
+        "_id": "t105",
+        "name": "Thunder Bot",
+        "price": 129,
+        "createdAt": 1681912978440,
+        "inStock": false,
+        "labels": ["Battery Powered", "Outdoor", "On wheels"]
+    }
+]
