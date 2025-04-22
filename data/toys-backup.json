@@ -38,5 +38,205 @@
         "createdAt": 1681912978440,
         "inStock": false,
         "labels": ["Battery Powered", "Outdoor", "On wheels"]
+    },
+    {
+        "_id": "t106",
+        "name": "Glow Worm",
+        "price": 35,
+        "createdAt": 1681913978440,
+        "inStock": true,
+        "labels": ["Baby", "Battery Powered"]
+    },
+    {
+        "_id": "t107",
+        "name": "Puzzle Tower",
+        "price": 48,
+        "createdAt": 1681913978440,
+        "inStock": false,
+        "labels": ["Puzzle"]
+    },
+    {
+        "_id": "t108",
+        "name": "Speedy Wheels",
+        "price": 99,
+        "createdAt": 1681913978440,
+        "inStock": true,
+        "labels": ["On wheels", "Outdoor"]
+    },
+    {
+        "_id": "t109",
+        "name": "Bunny Buddies",
+        "price": 58,
+        "createdAt": 1681913978440,
+        "inStock": true,
+        "labels": ["Doll", "Baby", "Box game"]
+    },
+    {
+        "_id": "t110",
+        "name": "Sketchy Kit",
+        "price": 62,
+        "createdAt": 1681913978440,
+        "inStock": false,
+        "labels": ["Art"]
+    },
+    {
+        "_id": "t111",
+        "name": "Robotron X",
+        "price": 150,
+        "createdAt": 1681913978440,
+        "inStock": true,
+        "labels": ["Battery Powered", "On wheels"]
+    },
+    {
+        "_id": "t112",
+        "name": "Mini Chef",
+        "price": 49,
+        "createdAt": 1681913978440,
+        "inStock": true,
+        "labels": ["Box game"]
+    },
+    {
+        "_id": "t113",
+        "name": "Jungle Jamboree",
+        "price": 77,
+        "createdAt": 1681913978440,
+        "inStock": false,
+        "labels": ["Outdoor", "Baby"]
+    },
+    {
+        "_id": "t114",
+        "name": "Mega Stack",
+        "price": 55,
+        "createdAt": 1681913978440,
+        "inStock": true,
+        "labels": ["Puzzle", "Box game"]
+    },
+    {
+        "_id": "t115",
+        "name": "Color Splash",
+        "price": 69,
+        "createdAt": 1681913978440,
+        "inStock": false,
+        "labels": ["Art", "Baby"]
+    },
+    {
+        "_id": "t116",
+        "name": "Knight Crawler",
+        "price": 82,
+        "createdAt": 1745306644426,
+        "inStock": false,
+        "labels": ["Box game", "On wheels"]
+    },
+    {
+        "_id": "t117",
+        "name": "Whiz Builder",
+        "price": 120,
+        "createdAt": 1745306544426,
+        "inStock": true,
+        "labels": ["Puzzle", "Art"]
+    },
+    {
+        "_id": "t118",
+        "name": "Galaxy Drone",
+        "price": 135,
+        "createdAt": 1745306444426,
+        "inStock": true,
+        "labels": ["Battery Powered", "Outdoor"]
+    },
+    {
+        "_id": "t119",
+        "name": "Sand Lab",
+        "price": 66,
+        "createdAt": 1745306344426,
+        "inStock": false,
+        "labels": ["Art", "Baby"]
+    },
+    {
+        "_id": "t120",
+        "name": "Happy Hopper",
+        "price": 73,
+        "createdAt": 1745306244426,
+        "inStock": true,
+        "labels": ["Outdoor", "On wheels"]
+    },
+    {
+        "_id": "t121",
+        "name": "Logic Ladder",
+        "price": 41,
+        "createdAt": 1745306144426,
+        "inStock": true,
+        "labels": ["Puzzle", "Box game"]
+    },
+    {
+        "_id": "t122",
+        "name": "Bubble Bouncer",
+        "price": 39,
+        "createdAt": 1745306044426,
+        "inStock": false,
+        "labels": ["Baby"]
+    },
+    {
+        "_id": "t123",
+        "name": "Art Explorer",
+        "price": 88,
+        "createdAt": 1745305944426,
+        "inStock": true,
+        "labels": ["Art"]
+    },
+    {
+        "_id": "t124",
+        "name": "Power Blaster",
+        "price": 110,
+        "createdAt": 1745305844426,
+        "inStock": false,
+        "labels": ["Battery Powered"]
+    },
+    {
+        "_id": "t125",
+        "name": "Tidy Tot",
+        "price": 47,
+        "createdAt": 1745305744426,
+        "inStock": true,
+        "labels": ["Baby", "Doll"]
+    },
+    {
+        "_id": "t126",
+        "name": "Stack-a-Mole",
+        "price": 57,
+        "createdAt": 1745305644426,
+        "inStock": true,
+        "labels": ["Puzzle"]
+    },
+    {
+        "_id": "t127",
+        "name": "DriveSmart",
+        "price": 103,
+        "createdAt": 1745305544426,
+        "inStock": false,
+        "labels": ["On wheels", "Battery Powered"]
+    },
+    {
+        "_id": "t128",
+        "name": "Puzzle Pop",
+        "price": 46,
+        "createdAt": 1745305444426,
+        "inStock": true,
+        "labels": ["Puzzle"]
+    },
+    {
+        "_id": "t129",
+        "name": "Crayon Craze",
+        "price": 68,
+        "createdAt": 1745305344426,
+        "inStock": true,
+        "labels": ["Art"]
+    },
+    {
+        "_id": "t130",
+        "name": "Little Climber",
+        "price": 83,
+        "createdAt": 1745305244426,
+        "inStock": false,
+        "labels": ["Outdoor"]
     }
 ]
