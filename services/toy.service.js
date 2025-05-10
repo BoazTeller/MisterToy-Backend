@@ -1,4 +1,4 @@
-import fs from 'fs'
+import fs from 'fs/promises'
 import { utilService } from './util.service.js'
 import { loggerService } from './logger.service.js'
 
@@ -13,7 +13,7 @@ export const toyService = {
     remove
 }
 
-function query(queryOptions = {}) {
+async function query(queryOptions = {}) {
     const { filterBy = {}, sortBy = {}, pagination = {}} = queryOptions
 
     // Fallback safety file gets corrupted
@@ -23,20 +23,20 @@ function query(queryOptions = {}) {
     toysToReturn = _sortToys(toysToReturn, sortBy)
     toysToReturn = _paginateToys(toysToReturn, pagination)
 
-    return Promise.resolve(toysToReturn)
+    return toysToReturn
 }
 
-function getById(toyId) {
+async function getById(toyId) {
     const toy = gToys.find(toy => toy._id === toyId)
     if (!toy) return Promise.reject(`Toy with ID ${toyId} not found`)
 
-    return Promise.resolve(toy)
+    return toy
 }
 
-function save(toyToSave) {
+async function save(toyToSave) {
     if (toyToSave._id) {
         const toyIdx = gToys.findIndex(toy => toy._id === toyToSave._id)
-        if (toyIdx === -1) return Promise.reject(`Toy with ID ${toyToSave._id} not found`)
+        if (toyIdx === -1) throw new Error(`Toy with ID ${toyToSave._id} not found`)
 
         gToys[toyIdx] = {
             ...gToys[toyIdx],
@@ -50,19 +50,20 @@ function save(toyToSave) {
         gToys.unshift(toyToSave)
     }
 
-    return _saveToysToFile().then(() => toyToSave)
+    await  _saveToysToFile()
+    return toyToSave
 }
 
-function remove(toyId) {
+async function remove(toyId) {
     const idx = gToys.findIndex(toy => toy._id === toyId)
-    if (idx === -1) return Promise.reject(`Toy with ID ${toyId} not found`)
+    if (idx === -1) throw new Error(`Toy with ID ${toyId} not found`)
 
     gToys.splice(idx, 1)
 
     // Returning true if _saveToysToFile() write succeeded.
     // If _saveToysToFile() fails, the rejection automatically propagates up,
     // and this function will also reject
-    return _saveToysToFile()
+    await _saveToysToFile()
 }
 
 function _filterToys(toys, filterBy) {
@@ -81,6 +82,16 @@ function _filterToys(toys, filterBy) {
         filteredToys = filteredToys.filter(toy =>
             filterBy.labels.every(label => toy?.labels?.includes(label))
         )
+    }
+
+    if (+filterBy.minPrice > 0 || +filterBy.maxPrice > 0) {
+        const min = (+filterBy.minPrice > 0) ? +filterBy.minPrice : 1
+        const max = (+filterBy.maxPrice > 0) ? +filterBy.maxPrice : Infinity
+    
+        // Filter by price only if max price is higher than min price
+        if (max >= min) {
+            filteredToys = filteredToys.filter(toy => toy.price >= min && toy.price <= max)
+        }
     }
 
     return filteredToys
@@ -113,17 +124,14 @@ function _paginateToys(toys, pagination) {
     return toys.slice(startIdx, startIdx + pageSize)
 }
 
-function _saveToysToFile() {
-    return new Promise((resolve, reject) => {
-        const toysStr = JSON.stringify(gToys, null, 4)
+async function _saveToysToFile() {
+    const toysStr = JSON.stringify(gToys, null, 4)
 
-        fs.writeFile(TOYS_FILE, toysStr, err => {
-            if (err) {
-                loggerService.error('Failed to write toys to file', err)
-                return reject(err)
-            }
-
-            resolve()
-        })
-    })
+    try {
+        // Promise resolves silenty (need to import fs/promises)
+        await fs.writeFile(TOYS_FILE, toysStr)
+    } catch (err) {
+        loggerService.error('Failed to write toys to file', err)
+        throw err
+    }
 }
