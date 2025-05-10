@@ -1,137 +1,113 @@
-import fs from 'fs/promises'
-import { utilService } from './util.service.js'
+import { ObjectId } from 'mongodb'
+import { dbService } from './db.service.js'
 import { loggerService } from './logger.service.js'
-
-const TOYS_FILE = './data/toys.json'
-const PAGE_SIZE = 3
-const gToys = utilService.readJsonFile(TOYS_FILE)
 
 export const toyService = {
     query,
     getById,
-    save,
+    add,
+    update,
     remove
 }
 
 async function query(queryOptions = {}) {
-    const { filterBy = {}, sortBy = {}, pagination = {}} = queryOptions
+    const { filterBy = {}, sortBy = {}, pagination = {} } = queryOptions
+    const criteria = _buildCriteria(filterBy)
+    const sort = _buildSort(sortBy)
+    const { pageIdx = 0, pageSize = 3 } = pagination
 
-    // Fallback safety file gets corrupted
-    let toysToReturn = Array.isArray(gToys) ? [...gToys] : []
+    try {
+        const toyCollection = await dbService.getCollection('toy')
+        const toys = await toyCollection.find(criteria)
+            .sort(sort)
+            .skip(pageIdx * pageSize)
+            .limit(pageSize)
+            .toArray()
 
-    toysToReturn = _filterToys(toysToReturn, filterBy)
-    toysToReturn = _sortToys(toysToReturn, sortBy)
-    toysToReturn = _paginateToys(toysToReturn, pagination)
-
-    return toysToReturn
+        return toys
+    } catch (err) {
+        loggerService.error('Cannot query toys', err)
+        throw err
+    }
 }
 
 async function getById(toyId) {
-    const toy = gToys.find(toy => toy._id === toyId)
-    if (!toy) return Promise.reject(`Toy with ID ${toyId} not found`)
-
-    return toy
+    try {
+        const toyCollection = await dbService.getCollection('toy')
+        const toy = await toyCollection.findOne({ _id: ObjectId.createFromHexString(toyId) })
+        return toy
+    } catch (err) {
+        loggerService.error(`Toy with ID ${toyId} not found`)
+        throw err
+    }
 }
 
-async function save(toyToSave) {
-    if (toyToSave._id) {
-        const toyIdx = gToys.findIndex(toy => toy._id === toyToSave._id)
-        if (toyIdx === -1) throw new Error(`Toy with ID ${toyToSave._id} not found`)
-
-        gToys[toyIdx] = {
-            ...gToys[toyIdx],
-            ...toyToSave,
-            updatedAt: Date.now()
-        }
-    } else {
-        toyToSave._id = utilService.makeId()
-        toyToSave.createdAt = Date.now()
-        toyToSave.updatedAt = Date.now()
-        gToys.unshift(toyToSave)
+async function add(toy) {
+    try {
+        const toyCollection = await dbService.getCollection('toy')
+        await toyCollection.insertOne(toy)
+        return toy
+    } catch (err) {
+        loggerService.error('Could not add toy', err)
+        throw err
     }
+}
 
-    await  _saveToysToFile()
-    return toyToSave
+async function update(toy) {
+    try {
+        const { _id, ...toyToUpdate } = toy
+        const toyCollection = await dbService.getCollection('toy')
+        await toyCollection.updateOne({ _id: ObjectId.createFromHexString(_id) }, { $set: toyToUpdate })
+        return toy
+    } catch (err) {
+        loggerService.error(`Could not update toy ${toy?._id}`, err)
+        throw err
+    }
 }
 
 async function remove(toyId) {
-    const idx = gToys.findIndex(toy => toy._id === toyId)
-    if (idx === -1) throw new Error(`Toy with ID ${toyId} not found`)
-
-    gToys.splice(idx, 1)
-
-    // Returning true if _saveToysToFile() write succeeded.
-    // If _saveToysToFile() fails, the rejection automatically propagates up,
-    // and this function will also reject
-    await _saveToysToFile()
+    try {
+        const toyCollection = await dbService.getCollection('toy')
+        // Returns a result object like: { acknowledged: true, deletedCount: 1 }
+        // If no document was found, deletedCount will be 0
+        return await toyCollection.deleteOne({ _id: ObjectId.createFromHexString(toyId) })
+    } catch (err) {
+        loggerService.error(`Cannot remove toy ${toyId}`)
+        throw err
+    }
 }
 
-function _filterToys(toys, filterBy) {
-    let filteredToys = [...toys]
+function _buildCriteria(filterBy) {
+    const criteria = {}
 
     if (filterBy.txt) {
-        const regex = new RegExp(filterBy.txt, 'i')
-        filteredToys = filteredToys.filter(toy => regex.test(toy.name))
+        criteria.name = { $regex: filterBy.txt, $options: 'i' }
     }
 
     if (typeof filterBy.inStock === 'boolean') {
-        filteredToys = filteredToys.filter(toy => toy.inStock === filterBy.inStock)
+        criteria.inStock = filterBy.inStock
     }
 
     if (Array.isArray(filterBy.labels) && filterBy.labels.length) {
-        filteredToys = filteredToys.filter(toy =>
-            filterBy.labels.every(label => toy?.labels?.includes(label))
-        )
+        criteria.labels = { $all: filterBy.labels }
     }
 
-    if (+filterBy.minPrice > 0 || +filterBy.maxPrice > 0) {
-        const min = (+filterBy.minPrice > 0) ? +filterBy.minPrice : 1
-        const max = (+filterBy.maxPrice > 0) ? +filterBy.maxPrice : Infinity
-    
-        // Filter by price only if max price is higher than min price
-        if (max >= min) {
-            filteredToys = filteredToys.filter(toy => toy.price >= min && toy.price <= max)
-        }
-    }
+    const min = +filterBy.minPrice || 0
+    const max = +filterBy.maxPrice || Infinity
+    criteria.price = { $gte: min, $lte: max }
 
-    return filteredToys
+    return criteria
 }
 
-function _sortToys(toys, sortBy) {
-    const sortedToys = [...toys]
-    const { sortField, sortDir } = sortBy
+function _buildSort(sortBy) {
+    const sort = {}
 
-    if (sortDir !== 1 && sortDir !== -1) return sortedToys
+    const isDescending = sortBy.sortDir === -1
+    const field = sortBy.sortField
 
-    if (sortField === 'name') {
-        sortedToys.sort((toy1, toy2) =>
-            toy1.name.localeCompare(toy2.name) * sortDir
-        )
-    } else if (['price', 'createdAt'].includes(sortField)) {
-        sortedToys.sort((toy1, toy2) =>
-            (toy1[sortField] - toy2[sortField]) * sortDir
-        )
+    if (field) {
+        sort[field] = isDescending ? -1 : 1
     }
 
-    return sortedToys
-}
-
-function _paginateToys(toys, pagination) {
-    const pageIdx = pagination.pageIdx || 0
-    const pageSize = pagination.pageSize || PAGE_SIZE
-    const startIdx = pageIdx * pageSize
-
-    return toys.slice(startIdx, startIdx + pageSize)
-}
-
-async function _saveToysToFile() {
-    const toysStr = JSON.stringify(gToys, null, 4)
-
-    try {
-        // Promise resolves silenty (need to import fs/promises)
-        await fs.writeFile(TOYS_FILE, toysStr)
-    } catch (err) {
-        loggerService.error('Failed to write toys to file', err)
-        throw err
-    }
+    return sort
 }
