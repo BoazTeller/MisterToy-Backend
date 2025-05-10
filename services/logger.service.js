@@ -2,44 +2,39 @@ import fs from 'fs'
 
 export const loggerService = {
     debug(...args) {
-        doLog('DEBUG', ...args)
+        log('DEBUG', ...args)
     },
     info(...args) {
-        doLog('INFO', ...args)
+        log('INFO', ...args)
     },
     warn(...args) {
-        doLog('WARN', ...args)
+        log('WARN', ...args)
     },
     error(...args) {
-        doLog('ERROR', ...args)
+        log('ERROR', ...args)
     }
 }
 
 const logsDir = './logs'
+const logFilePath = `${logsDir}/backend.log`
+
 if (!fs.existsSync(logsDir)) {
     fs.mkdirSync(logsDir)
 }
 
-//define the time format
-function getTime() {
-    let now = new Date()
-    return now.toLocaleString('he')
-}
-
-function isError(e) {
-    return e && e.stack && e.message
-}
-
-function doLog(level, ...args) {
-
-    const strs = args.map(arg =>
-        (typeof arg === 'string' || isError(arg)) ? arg : JSON.stringify(arg)
+function log(level, ...args) {
+    const formattedTime = new Date().toLocaleString('he')
+    const parts = args.map(arg =>
+        typeof arg === 'string' || isError(arg) ? arg : JSON.stringify(arg)
     )
-    var line = strs.join(' | ')
-    line = `${getTime()} - ${level} - ${line}\n`
+    const line = `${formattedTime} - ${level} - ${parts.join(' | ')}\n`
+
     console.log(line)
-    fs.appendFile('./logs/backend.log', line, (err) =>{
-        if (err) console.log('FATAL: cannot write to log file')
+    fs.appendFile(logFilePath, line, err => {
+        if (err) console.error('FATAL: Cannot write to log file')
     })
 }
 
+function isError(value) {
+    return value && value.stack && value.message
+}
