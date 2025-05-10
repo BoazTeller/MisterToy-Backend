@@ -1,22 +1,19 @@
 import { MongoClient } from 'mongodb'
+
+import { config } from '../config/index.js'
 import { loggerService } from './logger.service.js'
+
+let dbConn = null
 
 export const dbService = {
     getCollection
 }
 
-// Connection URL
-const url = 'mongodb://localhost:27017'
-
-// Database Name
-const dbName = 'toy_db'
-
-var dbConn = null
-
 async function getCollection(collectionName) {
     try {
-        const db = await _connect()
-        const collection = await db.collection(collectionName)
+        const db = await connect()
+        const collection = db.collection(collectionName)
+
         return collection
     } catch (err) {
         loggerService.error('Could not fetch Mongo collection', err)
@@ -24,14 +21,21 @@ async function getCollection(collectionName) {
     }
 }
 
-async function _connect() {
+async function connect() {
     if (dbConn) return dbConn
 
     try {
-        const client = await MongoClient.connect(url)
-        const db = client.db(dbName)
-        dbConn = db
-        return db
+        const client = await MongoClient.connect(
+            config.dbURL, 
+            {
+                useNewUrlParser: true,
+                useUnifiedTopology: true
+            }
+        )
+
+        dbConn = client.db(config.dbName)
+
+        return dbConn
     } catch (err) {
         loggerService.error('Could not connect to DB', err)
         throw err
