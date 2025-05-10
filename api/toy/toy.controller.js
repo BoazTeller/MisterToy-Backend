@@ -57,10 +57,11 @@ export async function addToy(req, res) {
 }
 
 export async function updateToy(req, res) {
-    const { _id, name, price, inStock, labels, imgUrl } = req.body
+    const { id } = req.params
+    const { name, price, inStock, labels, imgUrl } = req.body
 
     if (
-        !ObjectId.isValid(_id) ||
+        !ObjectId.isValid(id) ||
         typeof name !== 'string' || !name.trim() ||
         typeof price !== 'number' ||
         typeof inStock !== 'boolean'
@@ -69,7 +70,7 @@ export async function updateToy(req, res) {
     }
 
     const toy = {
-        _id,
+        _id: id,
         name: name.trim(),
         price,
         inStock,
@@ -81,7 +82,7 @@ export async function updateToy(req, res) {
         const savedToy = await toyService.update(toy)
         res.status(200).send(savedToy)
     } catch (err) {
-        loggerService.error(`PUT /api/toy/${_id} → Failed to update toy`, err)
+        loggerService.error(`PUT /api/toy/${id} → Failed to update toy`, err)
         res.status(500).send('Could not update resource')
     }
 }

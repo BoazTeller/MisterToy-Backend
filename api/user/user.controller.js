@@ -14,7 +14,7 @@ export async function getUsers(req, res) {
 export async function getUserById(req, res) {
     const { id } = req.params
 
-    if (!id || id === 'undefined' || id === 'null') {
+    if (!ObjectId.isValid(id)) {
         loggerService.warn(`GET /api/user → Invalid user ID: ${id || 'unknown'}`)
         return res.status(400).send('Invalid user ID')
     }
@@ -33,7 +33,7 @@ export async function getUserById(req, res) {
 export async function updateUser(req, res) {
     const user = req.body
 
-    if (!user?._id) {
+    if (!ObjectId.isValid(user?._id)) {
         loggerService.warn('PUT /api/user → Missing user ID in body')
         return res.status(400).send('Missing user ID')
     }
@@ -50,7 +50,7 @@ export async function updateUser(req, res) {
 export async function deleteUser(req, res) {
     const { id } = req.params
 
-    if (!id) {
+    if (!ObjectId.isValid(id)) {
         loggerService.warn('DELETE /api/user → Missing user ID')
         return res.status(400).send('Missing user ID')
     }
