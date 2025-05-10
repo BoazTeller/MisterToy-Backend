@@ -1,27 +1,44 @@
 import express from 'express'
 import cors from 'cors'
 import cookieParser from 'cookie-parser'
-import path from 'path'
+import path, { dirname } from 'path'
+import { fileURLToPath  } from 'url'
 
+// Services
 import { loggerService } from './services/logger.service.js'
+
+// Routes
 import { toyService } from './services/toy.service.js'
+import { toyRoutes } from './api/toy/toy.routes.js'
 
+// Suport for __dirname in ES modules
+const __filename = fileURLToPath (import.meta.url)
+const __dirname = dirname(__filename)
+
+// App setup
 const app = express()
+const isProduction = process.env.NODE_ENV === 'production'
 
-const corsOptions = {
-    origin: [
-        'http://127.0.0.1:3030',
-        'http://localhost:3030',
-        'http://127.0.0.1:5173',
-        'http://localhost:5173',
-    ],
-    credentials: true,
-}
-
-// app.use(express.static('public'))s
+// Middleware
 app.use(cookieParser())
 app.use(express.json())
-app.use(cors(corsOptions))
+
+if (isProduction) {
+    app.use(express.static(path.resolve(__dirname, 'public')))
+} else {
+    const corsOptions = {
+        origin: [
+            'http://127.0.0.1:3030',
+            'http://localhost:3030',
+            'http://127.0.0.1:5173',
+            'http://localhost:5173',
+        ],
+        credentials: true,
+    }
+    app.use(cors(corsOptions))
+}
+
+// API Routes
 
 /// *** Temporarily added res status explanations next to each res status to remind myself for future best practice ***
 app.get('/api/toy', async (req, res) => {
@@ -151,20 +168,18 @@ function _buildQueryOptions(rawQueryParams = {}) {
         }
     }
 
-}
+app.use('/api/toy', toyRoutes)
 
-// Fallback route - only used in production to serve frontend
-if (process.env.NODE_ENV === 'production') {
-    app.use(express.static('public'))
-
-    app.get('/**', (req, res) => {
-        res.sendFile(path.resolve('public/index.html'))
+// Fallback route
+if (isProduction) {
+    app.get('/*all', (req, res) => {
+        res.sendFile(path.resolve(__dirname, 'public/index.html'))
     })
 }
 
-// Server listen
-const PORT = 3030
-app.listen(PORT, err => {
-    if (err) loggerService.error('Failed to start server:', err)
-    else loggerService.info(`Server is running at: http://127.0.0.1:${PORT}/`)
+// Start server
+const port = process.env.PORT || 3030
+app.listen(port, (err) => {
+    if (err) loggerService.error('Server failed to start', err)
+    else loggerService.info(`Server is running on http://localhost:${port}`)
 })
